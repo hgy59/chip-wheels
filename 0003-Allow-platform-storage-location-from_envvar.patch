@@ -30,7 +30,7 @@
  CHIP_ERROR PosixConfig::Init()
  {
 -    return PersistedStorage::KeyValueStoreMgrImpl().Init(CHIP_CONFIG_KVS_PATH);
-+    PersistedStorage::KeyValueStoreMgrImpl().Init(GetConfigDataFile(CHIP_CONFIG_KVS_PATH).c_str());
++    return PersistedStorage::KeyValueStoreMgrImpl().Init(GetConfigDataFile(CHIP_CONFIG_KVS_PATH).c_str());
  }
  
  CHIP_ERROR PosixConfig::ReadConfigValue(Key key, bool & val)
