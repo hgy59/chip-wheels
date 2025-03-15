@@ -14,48 +14,49 @@
  struct PosixConfig::Key
 
 --- a/src/platform/Linux/PosixConfig.cpp	2025-03-15 12:10:25.338580400 +0100
-+++ b/src/platform/Linux/PosixConfig.cpp	2025-03-15 16:11:00.640287300 +0100
++++ b/src/platform/Linux/PosixConfig.cpp	2025-03-15 20:21:24.438583573 +0100
 @@ -24,6 +24,9 @@
   *          key-value config calls to the correct partition.
   */
  
 +#include <libgen.h>
++#include <string.h>
 +#include <string>
 +
  #include <platform/internal/CHIPDeviceLayerInternal.h>
  #include <platform/internal/testing/ConfigUnitTest.h>
  
-@@ -97,7 +100,7 @@
+@@ -97,7 +101,7 @@
  
  CHIP_ERROR PosixConfig::Init()
  {
 -    return PersistedStorage::KeyValueStoreMgrImpl().Init(CHIP_CONFIG_KVS_PATH);
-+    PersistedStorage::KeyValueStoreMgrImpl().Init(GetConfigDataFile(CHIP_CONFIG_KVS_PATH));
++    PersistedStorage::KeyValueStoreMgrImpl().Init(GetConfigDataFile(CHIP_CONFIG_KVS_PATH).c_str());
  }
  
  CHIP_ERROR PosixConfig::ReadConfigValue(Key key, bool & val)
-@@ -461,17 +464,17 @@
+@@ -461,17 +465,17 @@
      if (strcmp(ns, kConfigNamespace_ChipFactory) == 0)
      {
          storage = &gChipLinuxFactoryStorage;
 -        err     = storage->Init(CHIP_DEFAULT_FACTORY_PATH);
-+        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_FACTORY_PATH));
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_FACTORY_PATH).c_str());
      }
      else if (strcmp(ns, kConfigNamespace_ChipConfig) == 0)
      {
          storage = &gChipLinuxConfigStorage;
 -        err     = storage->Init(CHIP_DEFAULT_CONFIG_PATH);
-+        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_CONFIG_PATH));
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_CONFIG_PATH).c_str());
      }
      else if (strcmp(ns, kConfigNamespace_ChipCounters) == 0)
      {
          storage = &gChipLinuxCountersStorage;
 -        err     = storage->Init(CHIP_DEFAULT_DATA_PATH);
-+        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_DATA_PATH));
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_DATA_PATH).c_str());
      }
  
      SuccessOrExit(err);
-@@ -583,6 +586,39 @@
+@@ -583,6 +587,36 @@
      ::chip::DeviceLayer::Internal::RunConfigUnitTest<PosixConfig>();
  }
  
@@ -78,14 +79,11 @@
 +    {
 +        return dataFile;
 +    }
-+    if (customDir.back() != '/')
-+    {
-+        customDir += '/';
-+    }
 +
-+    char * fileName = basename(dataFile);
++    const char * fileName = strrchr(dataFile, '/');
 +    if (fileName == nullptr)
 +    {
++        // No path
 +        return dataFile;
 +    }
 +
