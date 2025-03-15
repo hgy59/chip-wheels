@@ -14,13 +14,13 @@
  struct PosixConfig::Key
 
 --- a/src/platform/Linux/PosixConfig.cpp	2025-03-15 12:10:25.338580400 +0100
-+++ b/src/platform/Linux/PosixConfig.cpp	2025-03-15 15:15:43.696433437 +0100
++++ b/src/platform/Linux/PosixConfig.cpp	2025-03-15 19:32:24.017432688 +0100
 @@ -24,6 +24,9 @@
   *          key-value config calls to the correct partition.
   */
  
 +#include <libgen.h>
-+#include <limits.h>
++#include <string>
 +
  #include <platform/internal/CHIPDeviceLayerInternal.h>
  #include <platform/internal/testing/ConfigUnitTest.h>
@@ -59,14 +59,12 @@
      ::chip::DeviceLayer::Internal::RunConfigUnitTest<PosixConfig>();
  }
  
-+// enable overwrite of path by environment variable CHIP_CUSTOM_CONIFG_PATH
++// enable overwrite of config file path by environment variable CHIP_CUSTOM_CONIFG_PATH
 +// default is /tmp
-+// patched to /data for homeassistant chip wheel
++// patched to /data for homeassistant chip wheels
 +// 
-+const char * PosixConfig::GetConfigDataFile(const char * dataFile)
++std::string PosixConfig::GetConfigDataFile(const char * dataFile)
 +{
-+    // todo: use MAX_PATH of <limits.h>
-+    char customFile[4096];
 +    const char * dir = getenv("CHIP_CUSTOM_CONIFG_PATH");
 +
 +    if (dir == nullptr)
@@ -74,11 +72,24 @@
 +        // Use original path
 +        return dataFile;
 +    }
-+    
++
++    std::string customDir = dir;
++    if (customDir.empty())
++    {
++        return dataFile;
++    }
++    if (customDir.back() != '/')
++    {
++        customDir += '/';
++    }
++
 +    char * fileName = basename(dataFile);
-+    snprintf(customFile, sizeof(customFile), "%s/%s", dir, fileName);
-+    
-+    return customFile;
++    if (fileName == nullptr)
++    {
++        return dataFile;
++    }
++
++    return customDir + fileName;
 +}
 +
  } // namespace Internal
