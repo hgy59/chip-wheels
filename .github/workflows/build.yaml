@@ -108,8 +108,6 @@ jobs:
             elif [[ "${tag}" == feature-* ]]; then
                 # use main tag for feature-branches that do not update the docker image
                 tag="main"
-                # force build of docker image
-                build_needed=true
             fi
           elif [ "${{ github.event_name }}" == "pull_request" ]; then
             # For pull_request, use base_ref/head_ref
