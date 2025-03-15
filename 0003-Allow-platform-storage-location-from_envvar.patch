@@ -19,14 +19,13 @@
   *          key-value config calls to the correct partition.
   */
  
-+#include <libgen.h>
 +#include <string.h>
 +#include <string>
 +
  #include <platform/internal/CHIPDeviceLayerInternal.h>
  #include <platform/internal/testing/ConfigUnitTest.h>
  
-@@ -97,7 +101,7 @@
+@@ -97,7 +100,7 @@
  
  CHIP_ERROR PosixConfig::Init()
  {
@@ -35,7 +34,7 @@
  }
  
  CHIP_ERROR PosixConfig::ReadConfigValue(Key key, bool & val)
-@@ -461,17 +465,17 @@
+@@ -461,17 +464,17 @@
      if (strcmp(ns, kConfigNamespace_ChipFactory) == 0)
      {
          storage = &gChipLinuxFactoryStorage;
@@ -56,7 +55,7 @@
      }
  
      SuccessOrExit(err);
-@@ -583,6 +587,36 @@
+@@ -583,6 +586,36 @@
      ::chip::DeviceLayer::Internal::RunConfigUnitTest<PosixConfig>();
  }
  
