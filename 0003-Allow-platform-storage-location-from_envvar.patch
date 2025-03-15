@@ -14,7 +14,7 @@
  struct PosixConfig::Key
 
 --- a/src/platform/Linux/PosixConfig.cpp	2025-03-15 12:10:25.338580400 +0100
-+++ b/src/platform/Linux/PosixConfig.cpp	2025-03-15 19:32:24.017432688 +0100
++++ b/src/platform/Linux/PosixConfig.cpp	2025-03-15 16:11:00.640287300 +0100
 @@ -24,6 +24,9 @@
   *          key-value config calls to the correct partition.
   */
@@ -55,7 +55,7 @@
      }
  
      SuccessOrExit(err);
-@@ -583,6 +586,28 @@
+@@ -583,6 +586,39 @@
      ::chip::DeviceLayer::Internal::RunConfigUnitTest<PosixConfig>();
  }
  
