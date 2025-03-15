@@ -2,6 +2,17 @@
 # 
 # allow overwrite of data storage location with env variable CHIP_CUSTOM_CONIFG_PATH
 # 
+--- a/src/platform/Linux/PosixConfig.h	2025-03-15 12:10:25.338580400 +0100
++++ b/src/platform/Linux/PosixConfig.h	2025-03-15 18:51:25.234869838 +0100
+@@ -111,6 +111,7 @@
+ 
+ private:
+     static ChipLinuxStorage * GetStorageForNamespace(Key key);
++    static std::string GetConfigDataFile(const char * dataFile);
+ };
+ 
+ struct PosixConfig::Key
+
 --- a/src/platform/Linux/PosixConfig.cpp	2025-03-15 12:10:25.338580400 +0100
 +++ b/src/platform/Linux/PosixConfig.cpp	2025-03-15 15:15:43.696433437 +0100
 @@ -24,6 +24,9 @@
