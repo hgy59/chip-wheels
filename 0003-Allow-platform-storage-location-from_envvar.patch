@@ -2,8 +2,8 @@
 # 
 # allow overwrite of data storage location with env variable CHIP_CUSTOM_CONIFG_PATH
 # 
---- src/platform/Linux/PosixConfig.cpp.orig	2025-03-15 12:10:25.338580400 +0100
-+++ src/platform/Linux/PosixConfig.cpp	2025-03-15 15:15:43.696433437 +0100
+--- a/src/platform/Linux/PosixConfig.cpp	2025-03-15 12:10:25.338580400 +0100
++++ b/src/platform/Linux/PosixConfig.cpp	2025-03-15 15:15:43.696433437 +0100
 @@ -24,6 +24,9 @@
   *          key-value config calls to the correct partition.
   */
