@@ -1,0 +1,75 @@
+# related to https://github.com/home-assistant-libs/python-matter-server/issues/1102
+# 
+# allow overwrite of data storage location with env variable CHIP_CUSTOM_CONIFG_PATH
+# 
+--- src/platform/Linux/PosixConfig.cpp.orig	2025-03-15 12:10:25.338580400 +0100
++++ src/platform/Linux/PosixConfig.cpp	2025-03-15 15:15:43.696433437 +0100
+@@ -24,6 +24,9 @@
+  *          key-value config calls to the correct partition.
+  */
+ 
++#include <libgen.h>
++#include <limits.h>
++
+ #include <platform/internal/CHIPDeviceLayerInternal.h>
+ #include <platform/internal/testing/ConfigUnitTest.h>
+ 
+@@ -97,7 +100,7 @@
+ 
+ CHIP_ERROR PosixConfig::Init()
+ {
+-    return PersistedStorage::KeyValueStoreMgrImpl().Init(CHIP_CONFIG_KVS_PATH);
++    PersistedStorage::KeyValueStoreMgrImpl().Init(GetConfigDataFile(CHIP_CONFIG_KVS_PATH));
+ }
+ 
+ CHIP_ERROR PosixConfig::ReadConfigValue(Key key, bool & val)
+@@ -461,17 +464,17 @@
+     if (strcmp(ns, kConfigNamespace_ChipFactory) == 0)
+     {
+         storage = &gChipLinuxFactoryStorage;
+-        err     = storage->Init(CHIP_DEFAULT_FACTORY_PATH);
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_FACTORY_PATH));
+     }
+     else if (strcmp(ns, kConfigNamespace_ChipConfig) == 0)
+     {
+         storage = &gChipLinuxConfigStorage;
+-        err     = storage->Init(CHIP_DEFAULT_CONFIG_PATH);
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_CONFIG_PATH));
+     }
+     else if (strcmp(ns, kConfigNamespace_ChipCounters) == 0)
+     {
+         storage = &gChipLinuxCountersStorage;
+-        err     = storage->Init(CHIP_DEFAULT_DATA_PATH);
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_DATA_PATH));
+     }
+ 
+     SuccessOrExit(err);
+@@ -583,6 +586,28 @@
+     ::chip::DeviceLayer::Internal::RunConfigUnitTest<PosixConfig>();
+ }
+ 
++// enable overwrite of path by environment variable CHIP_CUSTOM_CONIFG_PATH
++// default is /tmp
++// patched to /data for homeassistant chip wheel
++// 
++const char * PosixConfig::GetConfigDataFile(const char * dataFile)
++{
++    // todo: use MAX_PATH of <limits.h>
++    char customFile[4096];
++    const char * dir = getenv("CHIP_CUSTOM_CONIFG_PATH");
++
++    if (dir == nullptr)
++    {
++        // Use original path
++        return dataFile;
++    }
++    
++    char * fileName = basename(dataFile);
++    snprintf(customFile, sizeof(customFile), "%s/%s", dir, fileName);
++    
++    return customFile;
++}
++
+ } // namespace Internal
+ } // namespace DeviceLayer
+ } // namespace chip
