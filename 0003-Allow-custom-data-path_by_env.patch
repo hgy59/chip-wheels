@@ -1,0 +1,94 @@
+# related to https://github.com/home-assistant-libs/python-matter-server/issues/1102
+# 
+# allow definition of custom config data path by env variable CHIP_CONIFG_DATA_PATH
+# 
+--- a/src/platform/Linux/PosixConfig.h	2025-03-15 12:10:25.338580400 +0100
++++ b/src/platform/Linux/PosixConfig.h	2025-03-15 18:51:25.234869838 +0100
+@@ -111,6 +111,7 @@
+ 
+ private:
+     static ChipLinuxStorage * GetStorageForNamespace(Key key);
++    static std::string GetConfigDataFile(const char * dataFile);
+ };
+ 
+ struct PosixConfig::Key
+--- a/src/platform/Linux/PosixConfig.cpp	2025-03-15 12:10:25.338580400 +0100
++++ b/src/platform/Linux/PosixConfig.cpp	2025-03-16 10:00:57.377917492 +0100
+@@ -24,6 +24,10 @@
+  *          key-value config calls to the correct partition.
+  */
+ 
++#include <stdlib.h>
++#include <string.h>
++#include <string>
++
+ #include <platform/internal/CHIPDeviceLayerInternal.h>
+ #include <platform/internal/testing/ConfigUnitTest.h>
+ 
+@@ -97,7 +101,7 @@
+ 
+ CHIP_ERROR PosixConfig::Init()
+ {
+-    return PersistedStorage::KeyValueStoreMgrImpl().Init(CHIP_CONFIG_KVS_PATH);
++    return PersistedStorage::KeyValueStoreMgrImpl().Init(GetConfigDataFile(CHIP_CONFIG_KVS_PATH).c_str());
+ }
+ 
+ CHIP_ERROR PosixConfig::ReadConfigValue(Key key, bool & val)
+@@ -461,17 +465,17 @@
+     if (strcmp(ns, kConfigNamespace_ChipFactory) == 0)
+     {
+         storage = &gChipLinuxFactoryStorage;
+-        err     = storage->Init(CHIP_DEFAULT_FACTORY_PATH);
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_FACTORY_PATH).c_str());
+     }
+     else if (strcmp(ns, kConfigNamespace_ChipConfig) == 0)
+     {
+         storage = &gChipLinuxConfigStorage;
+-        err     = storage->Init(CHIP_DEFAULT_CONFIG_PATH);
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_CONFIG_PATH).c_str());
+     }
+     else if (strcmp(ns, kConfigNamespace_ChipCounters) == 0)
+     {
+         storage = &gChipLinuxCountersStorage;
+-        err     = storage->Init(CHIP_DEFAULT_DATA_PATH);
++        err     = storage->Init(GetConfigDataFile(CHIP_DEFAULT_DATA_PATH).c_str());
+     }
+ 
+     SuccessOrExit(err);
+@@ -583,6 +587,36 @@
+     ::chip::DeviceLayer::Internal::RunConfigUnitTest<PosixConfig>();
+ }
+ 
++// enable overwrite of config file path by environment variable CHIP_CONIFG_DATA_PATH
++// default is /tmp
++// patched to /data for homeassistant chip wheels
++std::string PosixConfig::GetConfigDataFile(const char * dataFile)
++{
++    const char * dir = getenv("CHIP_CONIFG_DATA_PATH");
++
++    if (dir == nullptr)
++    {
++        // No custom dir, use original file
++        return dataFile;
++    }
++
++    std::string customDir = dir;
++    if (customDir.empty())
++    {
++        // empty custom dir, use original file
++        return dataFile;
++    }
++
++    const char * fileName = strrchr(dataFile, '/');
++    if (fileName == nullptr)
++    {
++        // No path, use original file
++        return dataFile;
++    }
++
++    return customDir + fileName;
++}
++
+ } // namespace Internal
+ } // namespace DeviceLayer
+ } // namespace chip
