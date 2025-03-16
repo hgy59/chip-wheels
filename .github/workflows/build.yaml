@@ -120,8 +120,17 @@ jobs:
             tag="${{ github.event.release.target_commitish }}"
           fi
 
+          container_image=ghcr.io/${{ github.repository }}/chip-wheels-builder:${tag}
+
+          if [ "${build_needed}" = "false" ]; then
+            if ! docker manifest inspect ${container_image} > /dev/null 2>&1; then
+              echo "docker image ${container_image} does not exist; building container."
+              build_needed=true
+            fi
+          fi
+
           echo "Using container with tag: ${tag}"
-          echo "container_image=ghcr.io/${{ github.repository }}/chip-wheels-builder:${tag}" >> $GITHUB_OUTPUT
+          echo "container_image=${container_image}" >> $GITHUB_OUTPUT
           echo "build_needed=${build_needed}" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
