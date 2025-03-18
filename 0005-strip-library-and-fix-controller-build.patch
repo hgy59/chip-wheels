@@ -1,0 +1,27 @@
+# 
+# add ldflag to strip shared controller library
+# 
+# fix build:
+# - pygobject > 3.50.0 depends on libgirepository 2.0 that is not available on Ubuntu 22.04
+# 
+--- a/src/controller/python/BUILD.gn	2025-03-15 12:10:25.118581900 +0100
++++ b/src/controller/python/BUILD.gn	2025-03-15 22:24:49.658113388 +0100
+@@ -46,6 +46,9 @@
+ 
+   defines = []
+ 
++  # strip library
++  ldflags = [ "-s" ]
++
+   if (chip_controller) {
+     sources += [
+       "ChipCommissionableNodeController-ScriptBinding.cpp",
+@@ -391,7 +394,7 @@
+   } else if (current_os == "linux") {
+     py_package_reqs += [
+       "dbus-python==1.2.18",
+-      "pygobject",
++      "pygobject==3.50.0",
+     ]
+   }
+ 
